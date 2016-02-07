@@ -13,3 +13,4 @@ features <- c("MaskID", "gender_tscr", "livalone_demg", "bmi", "smoking",
 
 keyFeatures.df <- keyFeatures.df[, features]
 rm(features)
+
