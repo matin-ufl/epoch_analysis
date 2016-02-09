@@ -1,0 +1,24 @@
+MaskID: Identifier
+accpid: Identifier
+
+gender_tscr: F or M
+livalone_demg: 0-1
+bmi: BMI (continuous)
+smoking: 0 (No), 1 (Yes), 2 (Former)
+healthrt_mhah: 1 (Excellent) - 5 (Poor) - 6-7-8 (Missing) | 1-3 (OK), 4-5 (Sick)
+sub_diabetes: 0 (No), 1 (Impaired fasting glucose), 2 (Yes)
+arthrits_mhah: 0 (No), 1 (Yes)
+lungdis_mhah: 0 (No), 1 (Yes), 2 (Possible)
+totalscore_chmp: walk minutes per day (continuous)
+gait_speed_sppb: gait speed for SPPB test (continuous)
+sub_gait: 0 (0.8+), 1 (< 0.8)
+tot_scr_sppb: SPPB Score (1:9)
+sub_sppb: 0 (8-9), 1 (< 8)
+walk_comp_w400: 0 (Could not complete), 1 (completed)
+walk_time: seconds spent in 400m walk (continuous)
+mobility_disq: 1-2 (OK), +2 (Sick) (continuous)
+total_score_disq: 1-2 (OK), +2 (Sick) (continuous)
+_3MSE: 71:100 (continuous)
+sub_3MSE: 0 (+90), 1 (< 90)
+MetS: 0 (No), 1 (Yes) (metabolic syndrome)
+walkspeed: walk speed m/s (continuous)      

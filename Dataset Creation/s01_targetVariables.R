@@ -24,7 +24,7 @@ keyFeatures.df$lungdis_mhah <- factor(keyFeatures.df$lungdis_mhah) # No: 0, Yes:
 keyFeatures.df$sub_gait <- factor(keyFeatures.df$sub_gait) # 0.8+ : 0, <0.8: 1
 keyFeatures.df$sub_sppb <- factor(keyFeatures.df$sub_sppb) # 8-9: 0, 1-7: 1
 keyFeatures.df$walk_comp_w400 <- factor(keyFeatures.df$walk_comp_w400) # No: 0, Yes: 1
-keyFeatures.df$mobility_disq <- factor(keyFeatures.df$mobility_disq) # 1: No, 5: Yes (1-2 | 3-5)
+keyFeatures.df$mobility_disq <- keyFeatures.df$mobility_disq # 1: No, 5: Yes (1-2 | 3-5)
 keyFeatures.df$sub_3MSE <- factor(keyFeatures.df$sub_3MSE) # 90+: 0, <90: 1
 keyFeatures.df$MetS <- factor(keyFeatures.df$MetS) # No: 0, Yes: 1
 rm(features)
@@ -37,13 +37,13 @@ accelerometerFeatures.df <- accelerometerFeatures.df[accelerometerFeatures.df$vc
 valid.maskIds <- accelerometerFeatures.df[accelerometerFeatures.df$valid_days > 4, "MaskID"]
 rm(accelerometerFeatures.df)
 
-keyFeatures.df <- keyFeatures.df[keyFeatures.df$MaskID %in% valid.maskIds, ]
+keyFeatures.df <- keyFeatures.df[keyFeatures.df$MaskID %in% valid.maskIds$MaskID, ]
 pids <- sapply(keyFeatures.df$MaskID, function(x) {maskid_accpid$accpid[which(maskid_accpid$maskid == x)]})
 keyFeatures.df$accpid <- factor(pids, levels = pids)
 rm(pids)
 
 # saving the selected target variables for later analysis
-write.csv(keyFeatures.df, file = "../../Datasets/Target Variables - Key Features/out01_baseline_selected_targetVariables_020716.csv", row.names = F, quote = T)
+save(file = "../../Datasets/Target Variables - Key Features/out01_baseline_selected_targetVariables_020716.RData", keyFeatures.df)
 
 rm(list = ls())
 
