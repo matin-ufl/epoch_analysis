@@ -1,7 +1,7 @@
 library(ggplot2)
 library(gridExtra)
 
-# Loading dataset####
+# Loading dataset ---------------------------------------
 setwd("~/Dropbox/Work-Research/Current Directory/Bag of Words/R Scripts/02 First Version Continue/Participant Analysis/")
 
 load(file = "../../../Datasets/Epoch Dataset_Jan2016/03_participants_plus_a1AvgAc_baseline_020816.RData")
@@ -106,12 +106,69 @@ parallel.plot(normal.df, target.df$accpid, targetVar)
 
 rm(parallelCoordinatePlot, table.actualLabel.clusterLabel())
 
-
-This part is not yet completed
-
+rm(list = ls())
 
 # WALK-LIKE FEATURES ------------------------------------------------------------------
-Use the same analysis, but instead just include the walk-like features
+#Use the same analysis, but instead just include the walk-like features
+normal.df <- normal.df[, c(1:5, 11)]
+
+# How Many Clusters ====
+
+# K-Means with different number of clusters ####
+possible_clustering <- data.frame(matrix(ncol = 20, nrow = nrow(normal.df)))
+max.noClusters <- 50
+wss <- rep(0, max.noClusters)
+for (c in 1:max.noClusters) {
+     kmeans.out <- kmeans(normal.df, centers = c, iter.max = 200)
+     wss[c] <- kmeans.out$tot.withinss
+     possible_clustering[, c] <- kmeans.out$cluster
+}
+rm(c, max.noClusters)
+
+g <- ggplot(data = data.frame(y = wss)) + geom_point(aes(x = seq_along(y), y = y), size = 5, fill = "black") + geom_line(aes(x = seq_along(y), y = y, group = "a"), color = "blue") + labs(y = "Sum of Squared Error (WSS)", x = "Number of Clusters")
+g
+number.of.clusters <- 5
+g + geom_vline(xintercept = number.of.clusters, colour = "red")
+# It becomes obvious that we should have k = 5 features.
+rm(wss, kmeans.out, g)
+
+# Plotting Segments ====
+
+# Parallel coordinate plot - based on clusters ####
+cluster.labels <- factor(possible_clustering[, number.of.clusters])
+rm(possible_clustering)
+cluster.colours <- c("yellow", "blue", "green", "purple", "red", "black")[1:number.of.clusters]
+temp_df <- data.frame(melt(normal.df), participant = rep(target.df$accpid, ncol(normal.df)), cluster = rep(cluster.labels, ncol(normal.df)))
+parallelCoordinatePlot <- ggplot(data = temp_df, aes(x = variable, y = value))
+parallelCoordinatePlot <- parallelCoordinatePlot + geom_line(aes(colour = factor(cluster), group = participant))
+parallelCoordinatePlot + scale_colour_manual(values = cluster.colours)
+
+rm(parallelCoordinatePlot, temp_df, number.of.clusters)
+
+# 2-D plots of segments ####
+general_plot <- ggplot(data = normal.df)
+g1 <- general_plot + geom_point(aes(x = W1_prc, y = a1.avg_ac, colour = cluster.labels), size = 4) + scale_colour_manual(values = cluster.colours)
+g2 <- general_plot + geom_point(aes(x = W4_prc, y = W2_prc, colour = cluster.labels), size = 4) + scale_colour_manual(values = cluster.colours)
+g3 <- general_plot + geom_point(aes(x = W3_prc, y = W5_prc, colour = cluster.labels), size = 4) + scale_colour_manual(values = cluster.colours)
+a <- grid.arrange(g1, g2, g3, nrow = 3, ncol = 1)
+rm(general_plot, g1, g2, g3, a)
+
+# Checking the Target Variables =============================
+# change the target_idx for more plots
+source("f01_functions_for_participants.R")
+targetVar <- factor(target.df$walkspeed < 0.8)
+
+# Table of actual labels and clusters ####
+table.actualLabel.clusterLabel(targetVar, cluster.labels)
+
+# Parallel Coordinate Plot - based on target variables####
+parallel.plot(normal.df, target.df$accpid, targetVar)
+
+rm(parallelCoordinatePlot, table.actualLabel.clusterLabel())
+
+rm(list = ls())
+
+
 
 
 # WALK-LIKES AND NONWALKS USED SEPARATELY ---------------------------------------------
