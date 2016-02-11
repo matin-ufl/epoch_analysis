@@ -35,6 +35,23 @@ plot.2D.PCAFeatures <- function(dataFrame = pca.df, selected.labels = cluster.la
      grid.arrange(g1, g2, nrow = 2, ncol = 1)
 }
 
+plot.matrix.clusters <- function(cluster.w, cluster.nw, actual.class) {
+     nums <- cbind(
+          matrix(table(cluster.w[actual.class == levels(actual.class)[1]], cluster.nw[actual.class == levels(actual.class)[1]]), ncol = 1),
+          matrix(table(cluster.w[actual.class == levels(actual.class)[2]], cluster.nw[actual.class == levels(actual.class)[2]]), ncol = 1))
+     txt <- c(t(nums))
+     g <- ggplot(data = data.frame(labs = actual.class, cw = cluster.w, cnw = cluster.nw))
+     g <- g + geom_bar(aes(..count.., x = labs, fill = labs), position = "dodge", colour = "black") + facet_grid(cw~cnw)
+     g <- g + scale_fill_manual(values = c("red", "blue")) + labs(title = "Distribution of different classes", x = "Non-Walk Cluster", y = "Walk-Like Cluster")
+     g  + theme_bw()
+}
+
+plot.2D.matrix.clusters <- function(dataFrame, cluster.w, cluster.nw, actual.labels) {
+     general_plot <- ggplot(data = data.frame(feat1 = dataFrame$feat1, feat2 = dataFrame$feat2, labs = actual.labels, cw = cluster.w, cnw = cluster.nw))
+     g <- general_plot + geom_point(aes(x = feat1, y = feat2, colour = labs), size = 3) + scale_colour_manual(values = color.code)
+     g + facet_grid(cw~cnw) + labs(title = "Distribution of different classes", x = "Non-Walk Cluster", y = "Walk-Like Cluster") + theme_bw()
+}
+
 table.actualLabel.clusterLabel <- function(actualLabel, clusterLabel) {
      table(actualLabel, clusterLabel)     
 }

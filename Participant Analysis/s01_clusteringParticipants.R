@@ -79,7 +79,7 @@ plot.2D.allFeatures(normal.df, cluster.labels)
 
 # Checking the Target Variables =============================
 # change the target_idx for more plots
-targetVar <- factor(target.df$sub_sppb)
+targetVar <- factor(target.df$total_score_disq >= 2)
 
 # Table of actual labels and clusters
 table.actualLabel.clusterLabel(targetVar, cluster.labels)
@@ -153,9 +153,88 @@ rm(list = ls())
 
 
 # WALK-LIKES AND NONWALKS USED SEPARATELY ---------------------------------------------
-Consider clustering once based on walk-likes and once based on non-walks. Then construct a matrix and more
+# This is also named as Matrix clusterin?
+
+load(file = "../../Datasets/Checkpoints/checkPoint_01.RData")
+w.df <- normal.df[, c(1:5, 11)]
+nw.df <- normal.df[, c(6:10)]
+rm(normal.df)
+
+# How Many Clusters for Walks ====
+
+# K-Means with different number of clusters
+possible_clustering.w <- data.frame(matrix(ncol = 20, nrow = nrow(w.df)))
+max.noClusters <- 50
+wss <- rep(0, max.noClusters)
+for (c in 1:max.noClusters) {
+     kmeans.out <- kmeans(w.df, centers = c, iter.max = 200)
+     wss[c] <- kmeans.out$tot.withinss
+     possible_clustering.w[, c] <- kmeans.out$cluster
+}
+rm(c, max.noClusters)
+
+# Scree plot to see how many clusters are required.
+g <- ggplot(data = data.frame(y = wss)) + geom_point(aes(x = seq_along(y), y = y), size = 5, fill = "black") + geom_line(aes(x = seq_along(y), y = y, group = "a"), color = "blue") + labs(y = "Sum of Squared Error (WSS)", x = "Number of Clusters (Walks)")
+g
+
+# It becomes obvious that we should have k = 4 features.
+number.of.clusters.w <- 5
+gw <- g + geom_vline(xintercept = number.of.clusters.w, colour = "red")
+
+rm(wss, kmeans.out, g)
 
 
+# How Many Clusters for Non-Walks ====
+
+# K-Means with different number of clusters
+possible_clustering.nw <- data.frame(matrix(ncol = 20, nrow = nrow(nw.df)))
+max.noClusters <- 50
+wss <- rep(0, max.noClusters)
+for (c in 1:max.noClusters) {
+     kmeans.out <- kmeans(nw.df, centers = c, iter.max = 200)
+     wss[c] <- kmeans.out$tot.withinss
+     possible_clustering.nw[, c] <- kmeans.out$cluster
+}
+rm(c, max.noClusters)
+
+# Scree plot to see how many clusters are required.
+g <- ggplot(data = data.frame(y = wss)) + geom_point(aes(x = seq_along(y), y = y), size = 5, fill = "black") + geom_line(aes(x = seq_along(y), y = y, group = "a"), color = "blue") + labs(y = "Sum of Squared Error (WSS)", x = "Number of Clusters (Non Walks)")
+g
+
+# It becomes obvious that we should have k = 5 features.
+number.of.clusters.nw <- 4
+gnw <- g + geom_vline(xintercept = number.of.clusters.nw, colour = "red")
+
+rm(wss, kmeans.out, g)
+
+grid.arrange(gw, gnw, nrow = 2)
+
+rm(gw, gnw)
+
+cluster.labels.w <- factor(possible_clustering.w[, number.of.clusters.w])
+cluster.labels.nw <- factor(possible_clustering.nw[, number.of.clusters.nw])
+rm(possible_clustering.nw, possible_clustering.w)
+
+# Parallel coordinate plot - based on clusters
+g.w <- parallel.plot(w.df, target.df$accpid, cluster.labels.w)
+g.nw <- parallel.plot(nw.df, target.df$accpid, cluster.labels.nw)
+grid.arrange(g.w, g.nw, nrow = 2)
+rm(g.w, g.nw)
+
+# Checking the Target Variables =============================
+# change the target_idx for more plots
+targetVar <- factor(target.df$sub_sppb)
+
+plot.matrix.clusters(cluster.labels.w, cluster.labels.nw, targetVar)
+
+temp.plot.df <- data.frame(feat1 = w.df$W1_prc, feat2 = nw.df$NW1_prc)
+plot.2D.matrix.clusters(temp.plot.df, cluster.labels.w, cluster.labels.nw, targetVar)
+
+rm(temp.plot.df)
+
+# Fifth check point: analysis for matrix cluster are done.
+save.image(file = "../../Datasets/Checkpoints/checkPoint_05.RData")
+rm(list = ls())
 
 # PCA FEATURES -----------------------------------
 #Use the same analysis, but instead we use PCA features
