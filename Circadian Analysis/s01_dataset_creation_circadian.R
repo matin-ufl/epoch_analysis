@@ -3,7 +3,6 @@ library(PhysicalActivity)
 setwd("~/R Codes/01 Bag of Words/02 Circadian Analysis/")
 source("f01_dataset_creation_functions.R")
 
-
 # Data File selections ------------------------------------------
 
 # Temporary for easier file selection
@@ -22,15 +21,17 @@ colnames(output.df) <- c("a1.avg", "a1.std", "a1.energy", "a1.locomotion.avg", "
                          "steps", "locomotion",
                          "vm.avg", "vm.std", "vm.energy", "transition", "PID")
 
-for (i in 1:nrow(valid.files)) {
+for (i in 749:nrow(valid.files)) {
      PID <- valid.files$pid[i]
      HID <- paste("HID", valid.files$HID[i], ".RData", sep = "")
      load(HID)
      
      if(!is.na(AC.1s$axis3[1])) {
        AC.1s$VM <- sqrt((AC.1s$axis1^2) + (AC.1s$axis2^2) + (AC.1s$axis3^2))
-     } else {
+     } else if(!is.na(AC.1s$axis2[1])) {
        AC.1s$VM <- sqrt((AC.1s$axis1^2) + (AC.1s$axis2^2))
+     } else {
+       AC.1s$VM <- AC.1s$axis1
      }
      wearTimes.info <- find.wearTime(AC.1s)
      

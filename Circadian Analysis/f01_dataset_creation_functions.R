@@ -129,7 +129,7 @@ features.from.accelerometer <- function(accelerometer.data = selected.accelerome
 
 # Rejects activity points which fall into P.95 or higher.
 smooth.acitivityPoints <- function(selected.piece.ac, threshold = 0.95) {
-     t <- quantile(selected.piece.ac, threshold)[[1]]
+     t <- quantile(selected.piece.ac, threshold, na.rm = T)[[1]]
      result <- selected.piece.ac
      if(t > 0) {
           temp <- selected.piece.ac[-(which(selected.piece.ac > t))]
@@ -143,7 +143,7 @@ smooth.acitivityPoints <- function(selected.piece.ac, threshold = 0.95) {
 # If the non zero points are dominant and CV is low, then it is locomotion
 isLocomotion <- function(selected.piece.ac = a1, nonZero.threshold = 0.70) {
      if(length(selected.piece.ac) > 0) {
-          if((sum(selected.piece.ac > 0) / length(selected.piece.ac)) > nonZero.threshold) {
+          if((sum(selected.piece.ac > 0, na.rm = T) / length(selected.piece.ac)) > nonZero.threshold) {
                return(T)
           }
      }
