@@ -64,12 +64,26 @@ simple_aggregate_one_participant.15sec <- function(oneParticipant.df) {
 }
 
 replace_NA_with_zero <- function(df) {
-     na.idx <- which(is.na(df))
-     result <- as.matrix(df)
-     result[na.idx] <- 0L
-     result <- data.frame(result)
-     result[] <- mapply(FUN = as, result, sapply(df, class), SIMPLIFY = FALSE)
-     result
+     for (i in 1:ncol(df)) {
+          nan.idx <- which(is.na(df[, i]))
+          if(length(nan.idx)) {
+               df[nan.idx, i] <- 0
+          }
+     }
+     df
+}
+
+outlier.detection <- function(dataFrame = df, exclude.column = 1, count.threshold = floor(ncol(df)/5), value.threshold = 2) {
+     dt <- dataFrame[, -exclude.column]
+     counts <- rep(0, nrow(dataFrame))
+     for (i in 1:nrow(dt)) {
+          for(j in 1:ncol(dt)) {
+               if(abs(dt[i, j] - mean(dt[, j])) > value.threshold * sd(dt[, j])) {
+                    counts[i] <- counts[i] + 1
+               }
+          }
+     }
+     which(counts > count.threshold)
 }
 
 ordered.targetVariable <- function(PIDs, target.PIDs, targetVar) {
@@ -93,6 +107,74 @@ parallel.plot <- function(dataFrame = df, targetVar) {
 }
 
 
+label.on.value <- function(epoch.df, feature.idx) {
+     epoch.label <- factor(c("most.inactive", "inactive", "active", "most.active"), levels = c("most.inactive", "inactive", "active", "most.active"))
+     result <- data.frame(word = rep(NA, nrow(epoch.df)))
+     q.morning <- quantile(epoch.df[epoch.df$transition == "morning", feature.idx])
+     q.noon <- quantile(epoch.df[epoch.df$transition == "noon", feature.idx])
+     q.afternoon <- quantile(epoch.df[epoch.df$transition == "afternoon", feature.idx])
+     q.evening <- quantile(epoch.df[epoch.df$transition == "evening", feature.idx])
+     for (i in 1:nrow(epoch.df)) {
+          print(i)
+          if(epoch.df$transition[i] == "morning") {
+               result$word[i] <- private.giveMeLabel(epoch.df[i, feature.idx], q.morning, epoch.label)
+          } else if(epoch.df$transition[i] == "noon") {
+               result$word[i] <- private.giveMeLabel(epoch.df[i, feature.idx], q.noon, epoch.label)
+          } else if(epoch.df$transition[i] == "afternoon") {
+               result$word[i] <- private.giveMeLabel(epoch.df[i, feature.idx], q.afternoon, epoch.label)
+          } else {
+               result$word[i] <- private.giveMeLabel(epoch.df[i, feature.idx], q.evening, epoch.label)
+          }
+     }
+     result
+}
 
+private.giveMeLabel <- function(value, q, labels) {
+     if(value < q[2]) {
+          return(levels(labels)[1])
+     } else if(value < q[3]) {
+          return(levels(labels)[2])
+     } else if(value < q[4]) {
+          return(levels(labels)[3])
+     } else {
+          return(levels(labels)[4])
+     }
+}
 
-
+label.aggregate.oneParticipant <- function(oneParticipant.label.df) {
+     result <- data.frame(PID = oneParticipant.label.df$PID[1],
+                          morning.mostInactive = 0, morning.inactive = 0, morning.active = 0, morning.mostActive = 0,
+                          noon.mostInactive = 0, noon.inactive = 0, noon.active = 0, noon.mostActive = 0,
+                          afternoon.mostInactive = 0, afternoon.inactive = 0, afternoon.active = 0, afternoon.mostActive = 0,
+                          evening.mostInactive = 0, evening.inactive = 0, evening.active = 0, evening.mostActive = 0)
+     
+     # Morning
+     day.time <- oneParticipant.label.df[oneParticipant.label.df$time.of.day == "morning", ]
+     result$morning.mostInactive <- length(which(day.time$word == "most.inactive")) / length(day.time$word)
+     result$morning.inactive <- length(which(day.time$word == "inactive")) / length(day.time$word)
+     result$morning.active <- length(which(day.time$word == "active")) / length(day.time$word)
+     result$morning.mostActive <- length(which(day.time$word == "most.active")) / length(day.time$word)
+     
+     # Noon
+     day.time <- oneParticipant.label.df[oneParticipant.label.df$time.of.day == "noon", ]
+     result$noon.mostInactive <- length(which(day.time$word == "most.inactive")) / length(day.time$word)
+     result$noon.inactive <- length(which(day.time$word == "inactive")) / length(day.time$word)
+     result$noon.active <- length(which(day.time$word == "active")) / length(day.time$word)
+     result$noon.mostActive <- length(which(day.time$word == "most.active")) / length(day.time$word)
+     
+     # Afternoon
+     day.time <- oneParticipant.label.df[oneParticipant.label.df$time.of.day == "afternoon", ]
+     result$afternoon.mostInactive <- length(which(day.time$word == "most.inactive")) / length(day.time$word)
+     result$afternoon.inactive <- length(which(day.time$word == "inactive")) / length(day.time$word)
+     result$afternoon.active <- length(which(day.time$word == "active")) / length(day.time$word)
+     result$afternoon.mostActive <- length(which(day.time$word == "most.active")) / length(day.time$word)
+     
+     # Evening
+     day.time <- oneParticipant.label.df[oneParticipant.label.df$time.of.day == "evening", ]
+     result$evening.mostInactive <- length(which(day.time$word == "most.inactive")) / length(day.time$word)
+     result$evening.inactive <- length(which(day.time$word == "inactive")) / length(day.time$word)
+     result$evening.active <- length(which(day.time$word == "active")) / length(day.time$word)
+     result$evening.mostActive <- length(which(day.time$word == "most.active")) / length(day.time$word)
+     
+     result
+}
